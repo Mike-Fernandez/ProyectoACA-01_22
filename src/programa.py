@@ -1,8 +1,19 @@
 import os
-from flask import Flask, flash, request, redirect, url_for,send_from_directory
+from flask import Flask, flash, request, redirect, url_for,send_from_directory, render_template
 from werkzeug.utils import secure_filename
-from main import char_list_from_file, infer
-from model import DecoderType, Model
+from main import *
+#from model import DecoderType, Model
+import argparse
+import json
+from typing import Tuple, List
+
+import cv2
+import editdistance
+from path import Path
+
+from dataloader_iam import DataLoaderIAM, Batch
+from model import Model, DecoderType
+from preprocessor import Preprocessor
 
 #UPLOAD_FOLDER = '../data/'
 
@@ -14,8 +25,8 @@ path = os.getcwd()
 # file Upload
 UPLOAD_FOLDER = os.path.join(path, 'uploads')
 
-# if not os.path.isdir(UPLOAD_FOLDER):
-#     os.mkdir(UPLOAD_FOLDER)
+if not os.path.isdir(UPLOAD_FOLDER):
+    os.mkdir(UPLOAD_FOLDER)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -63,22 +74,27 @@ def upload_file():
 
 @app.route('/infer', methods=['GET'])
 def infer_uploads():
+    args = parse_args()
+    decoder_mapping = {'bestpath': DecoderType.BestPath,
+                       'beamsearch': DecoderType.BeamSearch,
+                       'wordbeamsearch': DecoderType.WordBeamSearch}
+    decoder_type = decoder_mapping[args.decoder]
     #esta parte de buscar el archivo falla, hay que reparar aqui OJO
+    unArchivo = "C:\\Users\\operator\\Documents\\ACA_01-22\\Proyecto\\ProyectoACA-01_22\\uploads\\20220610_170815.jpg"
     print("un archivo")
     print(unArchivo)
     #elModel: Model
-    model = Model(char_list_from_file(), DecoderType, must_restore=True)
+    model = Model(char_list_from_file(), decoder_type, must_restore=True)
     #dump=args.dump
-    infer(model, unArchivo)
-    return '''
-            <!doctype html>
-            <title>TEST RESPONSE</title>
-            <h1>Upload new File</h1>
-            <form method=post enctype=multipart/form-data>
-            <input type=file name=file>
-            <input type=submit value=Upload>
-            </form>
-            '''
+    texto = infer(model, unArchivo)
+    return render_template('predicted.html', texto=texto)
+    #return '''
+    #        <!doctype html>
+    #        <title>TEST RESPONSE</title>
+    #        <h1>Upload new File</h1>
+    #        <p> Predicted Text: </p>
+    #        <p> { texto } </p>
+    #        '''
 
 @app.route('/uploads/<name>')
 def download_file(name):
