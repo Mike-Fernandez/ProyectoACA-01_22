@@ -27,3 +27,6 @@ Se instala con el comando "pip install tensorflow"
 
 * Flask 2.1.2
 Se instala con el comando "pip install Flask"
+
+## Modelo utilizado
+Se debe descargar el modelo del repositorio originial para leer líneas denominado "Model trained on text line images", y posteriormente descomprimirse en la carpeta model
