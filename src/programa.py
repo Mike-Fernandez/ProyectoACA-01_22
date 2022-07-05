@@ -14,8 +14,8 @@ path = os.getcwd()
 # file Upload
 UPLOAD_FOLDER = os.path.join(path, 'uploads')
 
-# if not os.path.isdir(UPLOAD_FOLDER):
-#     os.mkdir(UPLOAD_FOLDER)
+if not os.path.isdir(UPLOAD_FOLDER):
+    os.mkdir(UPLOAD_FOLDER)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
