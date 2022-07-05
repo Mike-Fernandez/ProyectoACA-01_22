@@ -1,5 +1,5 @@
 import os
-from flask import Flask, flash, request, redirect, url_for,send_from_directory, session
+from flask import Flask, flash, request, redirect, url_for,send_from_directory, session, render_template
 from werkzeug.utils import secure_filename
 from main import char_list_from_file, infer
 from model import DecoderType, Model
@@ -14,16 +14,10 @@ path = os.getcwd()
 # file Upload
 UPLOAD_FOLDER = os.path.join(path, 'uploads')
 
-# if not os.path.isdir(UPLOAD_FOLDER):
-#     os.mkdir(UPLOAD_FOLDER)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-# def allowed_file(filename):
-#     return '.' in filename and \
-#            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 unArchivo = ''
 
@@ -54,15 +48,7 @@ def upload_file():
             #return redirect(url_for('download_file', name=filename))
             session['filepath'] = archivo
             return redirect(url_for('infer_uploads'))
-    return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
-    <form method=post enctype=multipart/form-data>
-      <input type=file name=file>
-      <input type=submit value=Upload>
-    </form>
-    '''
+    return render_template('home.html')
 
 @app.route('/infer', methods=['GET'])
 def infer_uploads():
@@ -73,16 +59,8 @@ def infer_uploads():
     model = Model(char_list_from_file(), DecoderType.BestPath, must_restore=True)
     #dump=args.dump
     archivo = session.get('filepath',None)
-    infer(model, archivo)
-    return '''
-            <!doctype html>
-            <title>TEST RESPONSE</title>
-            <h1>Upload new File</h1>
-            <form method=post enctype=multipart/form-data>
-            <input type=file name=file>
-            <input type=submit value=Upload>
-            </form>
-            '''
+    texto = infer(model, archivo)
+    return render_template('predicted.html', texto=texto)
 
 @app.route('/uploads/<name>')
 def download_file(name):
@@ -91,24 +69,6 @@ def download_file(name):
 app.add_url_rule(
     "/uploads/<name>", endpoint="download_file", build_only=True
 )
-#puede ser opcional
-
-# @app.route("/")
-# def index():
-#     return (
-#         """<form action="upload" method="post" id="upload-form">
-#         <input type="file" name="imagefile" id="imagefile"/>
-#         <input type="submit" />
-#         </form>"""
-#     )
-
-# @app.route('/upload', methods=['POST'])
-# def upload():
-#     try:
-#         return "response try I can say hello"
-#     except Exception as e:
-#         app.logger.exception(e)
-#         return "Can't say hello."
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8080, debug=True)
