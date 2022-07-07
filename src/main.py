@@ -35,7 +35,7 @@ def write_summary(char_error_rates: List[float], word_accuracies: List[float]) -
     with open(FilePaths.fn_summary, 'w') as f:
         json.dump({'charErrorRates': char_error_rates, 'wordAccuracies': word_accuracies}, f)
 
-
+#Se llama la lista de caracteres encontrados en el modelo
 def char_list_from_file() -> List[str]:
     with open(FilePaths.fn_char_list) as f:
         return list(f.read())
@@ -123,7 +123,7 @@ def validate(model: Model, loader: DataLoaderIAM, line_mode: bool) -> Tuple[floa
     print(f'Character error rate: {char_error_rate * 100.0}%. Word accuracy: {word_accuracy * 100.0}%.')
     return char_error_rate, word_accuracy
 
-
+#Método donde se realiza la predicción de texto
 def infer(model: Model, fn_img: Path) -> None:
     """Recognizes text in image provided by file path."""
     img = cv2.imread(fn_img, cv2.IMREAD_GRAYSCALE)
@@ -133,6 +133,8 @@ def infer(model: Model, fn_img: Path) -> None:
     img = preprocessor.process_img(img)
 
     batch = Batch([img], None, 1)
+    #Recognized es la variable con la palabra leida
+    #Probability es el porcentaje de confianza de la deducción
     recognized, probability = model.infer_batch(batch, True)
     return recognized[0]
 #    print(f'Recognized: "{recognized[0]}"')
